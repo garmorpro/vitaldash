@@ -90,11 +90,56 @@ new server:
 From there you can browse the `daily_entries` table visually, same as
 you'd use phpMyAdmin for MySQL.
 
+### Automatic step import (Apple Shortcuts)
+
+`POST /api/import/steps` accepts a daily step count from an external
+automation — no Health Auto Export subscription needed, just the free,
+built-in Shortcuts app.
+
+**⚠️ Prerequisite:** your phone needs to be able to reach this endpoint
+whenever the automation runs — including on cellular, away from home. That
+means `vitaldash.morganserver.com` (or similar) needs to actually resolve
+and be reachable from the internet, which isn't set up yet (right now the
+app is only reachable at the server's LAN IP). Get that working first, or
+the Shortcut will silently fail to log steps anytime you're not on your
+home WiFi.
+
+**1. Set the secret token on the server**, in `.env`:
+```
+STEPS_IMPORT_TOKEN="<a long random string — generate with: openssl rand -hex 32>"
+```
+Redeploy (`./scripts/deploy.sh`) after adding it.
+
+**2. Build the Shortcut** (Shortcuts app → + → new shortcut):
+1. Add action **Find Health Samples** — Type: `Steps`, Date: `Today`,
+   sort/limit not needed since the next step sums them.
+2. Add action **Calculate Statistics** — Statistic: `Sum`, Input: the
+   health samples from step 1.
+3. Add action **Get Contents of URL**:
+   - URL: `https://vitaldash.morganserver.com/api/import/steps`
+   - Method: `POST`
+   - Headers: `Authorization` → `Bearer <the same token from .env>`
+   - Request Body: `JSON`, with fields:
+     - `date` → `Current Date` formatted as `ISO8601` (or just today's
+       date as `YYYY-MM-DD`)
+     - `steps` → the Sum result from step 2
+
+**3. Automate it** (Automation tab → + → Personal Automation → Time of
+Day): pick a time (e.g. 11:55 PM daily), choose **Run Immediately** (not
+"Ask Before Running") so it fires silently in the background, and set the
+action to run your new shortcut.
+
+Test it once manually from the Shortcuts app first — if `Authorization`
+header or the JSON body is malformed, the endpoint responds `400`/`401`
+with an error message explaining what's wrong.
+
 ## Project structure
 
 - `src/app/page.tsx` — home page (renders the dashboard)
-- `src/components/EntryDashboard.tsx` — the weight/steps form + history UI
-- `src/app/api/entries/route.ts` — the only code that reads/writes entries
+- `src/components/EntryDashboard.tsx` — assembles the full dashboard
+- `src/app/api/entries/route.ts` — reads/writes entries from the UI
+- `src/app/api/import/steps/route.ts` — token-protected webhook for the
+  Apple Shortcuts step import
 - `src/lib/prisma.ts` — the only place `PrismaClient` is instantiated
 - `prisma/schema.prisma` — database schema (`DailyEntry` model)
 
