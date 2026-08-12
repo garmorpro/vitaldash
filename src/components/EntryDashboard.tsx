@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useEntries, type Entry } from "@/hooks/useEntries";
 import Masthead from "./Masthead";
 import WeightStatCard from "./WeightStatCard";
@@ -11,11 +12,10 @@ import WeightChart from "./WeightChart";
 import StepsChart from "./StepsChart";
 import HistoryTable from "./HistoryTable";
 import EntryFab from "./EntryFab";
-import EditEntryModal from "./EditEntryModal";
 
 export default function EntryDashboard() {
-  const { entries, loading, error, saveEntry, deleteEntry } = useEntries();
-  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+  const router = useRouter();
+  const { entries, loading, error, deleteEntry } = useEntries();
 
   // Swipe-to-delete is already a deliberate two-step gesture (swipe, then
   // tap Delete), so it deletes immediately — no extra confirm dialog on
@@ -25,6 +25,13 @@ export default function EntryDashboard() {
       deleteEntry(entry.date).catch(() => {});
     },
     [deleteEntry]
+  );
+
+  const handleRowClick = useCallback(
+    (entry: Entry) => {
+      router.push(`/log/edit/${entry.date}`);
+    },
+    [router]
   );
 
   return (
@@ -50,18 +57,14 @@ export default function EntryDashboard() {
         <BpChart entries={entries} />
         <WeightChart entries={entries} />
         <StepsChart entries={entries} />
-        <HistoryTable entries={entries} loading={loading} onRowClick={setEditingEntry} onDelete={handleSwipeDelete} />
+        <HistoryTable entries={entries} loading={loading} onRowClick={handleRowClick} onDelete={handleSwipeDelete} />
       </main>
 
       <footer className="tabular pb-2 text-center text-[0.76rem] font-semibold" style={{ color: "var(--ink-faint)" }}>
         SELF-HOSTED <span className="mx-2 opacity-50">·</span> POSTGRES <span className="mx-2 opacity-50">·</span> PM2
       </footer>
 
-      <EntryFab onSave={saveEntry} />
-
-      {editingEntry && (
-        <EditEntryModal entry={editingEntry} onClose={() => setEditingEntry(null)} onSave={saveEntry} onDelete={deleteEntry} />
-      )}
+      <EntryFab />
     </div>
   );
 }
