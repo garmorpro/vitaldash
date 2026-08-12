@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 import type { DailyEntry } from "@/generated/prisma/client";
 
 // This route is the ONLY thing that talks to the database for daily
 // entries. Client components call fetch("/api/entries") — they never
 // import PrismaClient or hold a DB connection string.
+//
+// proxy.ts already blocks unauthenticated requests before they get here,
+// but every handler re-checks the session itself — a route handler should
+// never trust that it was only ever reached through the gate in front of it.
 
 function serialize(e: DailyEntry) {
   return {
@@ -19,7 +24,13 @@ function serialize(e: DailyEntry) {
 }
 
 export async function GET() {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
   const entries = await prisma.dailyEntry.findMany({
+    where: { userId: session.userId },
     orderBy: { date: "asc" },
   });
 
@@ -27,6 +38,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
   const body = await request.json();
   const { date, weightLbs, steps, systolic, diastolic, pulse } = body ?? {};
 
@@ -62,7 +78,7 @@ export async function POST(request: NextRequest) {
   }
 
   const entry = await prisma.dailyEntry.upsert({
-    where: { date: new Date(date) },
+    where: { userId_date: { userId: session.userId, date: new Date(date) } },
     update: {
       ...(weightLbs != null ? { weightLbs } : {}),
       ...(steps != null ? { steps } : {}),
@@ -71,6 +87,7 @@ export async function POST(request: NextRequest) {
       ...(pulse != null ? { pulse } : {}),
     },
     create: {
+      userId: session.userId,
       date: new Date(date),
       weightLbs: weightLbs ?? null,
       steps: steps ?? null,
@@ -84,13 +101,18 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
   const date = request.nextUrl.searchParams.get("date");
 
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json({ error: "date query param is required as YYYY-MM-DD" }, { status: 400 });
   }
 
-  await prisma.dailyEntry.deleteMany({ where: { date: new Date(date) } });
+  await prisma.dailyEntry.deleteMany({ where: { userId: session.userId, date: new Date(date) } });
 
   return NextResponse.json({ ok: true });
 }

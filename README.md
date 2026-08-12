@@ -46,9 +46,12 @@ machine except editing code and `git push`.
    cd vitaldash
    npm install
    ```
-4. Copy `.env.example` to `.env` and set `DATABASE_URL` to match the
-   user/password/db name above (host is `localhost` since the app and DB
-   run on the same server).
+4. Copy `.env.example` to `.env` and fill in every value — `DATABASE_URL`
+   to match the user/password/db name above (host is `localhost` since the
+   app and DB run on the same server), plus `SESSION_SECRET`,
+   `WEBAUTHN_RP_ID`, `WEBAUTHN_ORIGIN`, and `SETUP_TOKEN` (see
+   [Accounts & Face ID sign-in](#accounts--face-id-sign-in) below — the app
+   won't be usable without these).
 5. Push the schema to the database:
    ```bash
    npx prisma db push
@@ -60,6 +63,44 @@ machine except editing code and `git push`.
    ```
    (For a persistent process across reboots/crashes, run this under a
    process manager like `pm2` or a systemd service — not covered yet.)
+7. Visit `https://<your-domain>/setup?token=<SETUP_TOKEN from .env>` on
+   your phone to create the first account and enroll Face ID — see
+   [Accounts & Face ID sign-in](#accounts--face-id-sign-in).
+
+## Accounts & Face ID sign-in
+
+There's no username/password — signing in is entirely via a WebAuthn
+passkey (Face ID / Touch ID), the same mechanism behind "Sign in with Face
+ID" prompts on banking sites. Nothing biometric ever leaves the device;
+the server only ever sees a cryptographic signature.
+
+**Required `.env` values:**
+- `SESSION_SECRET` — signs session + login-challenge cookies. Generate
+  with `openssl rand -base64 32`.
+- `WEBAUTHN_RP_ID` — the bare domain, e.g. `vitaldash.morganserver.com`
+  (no `https://`, no port).
+- `WEBAUTHN_ORIGIN` — the full origin, e.g.
+  `https://vitaldash.morganserver.com`. Must match what's in the
+  browser's address bar exactly or passkeys fail to verify.
+- `SETUP_TOKEN` — a one-time secret gating the very first account.
+  Generate with `openssl rand -hex 16`.
+
+**Creating the first account:** visit `/setup?token=<SETUP_TOKEN>` on the
+device you want signed in (your phone). This only works while zero
+accounts exist — the moment one is created, `/setup` refuses to create
+another regardless of the token, and every pre-existing daily entry in the
+database gets attached to that new account automatically.
+
+**Adding other people:** every account after the first comes from an
+invite — sign in, tap the account icon in the top-right corner → *Invite
+someone* → share the generated link. Each person enrolls their own Face ID
+and gets their own private weight/steps/BP history. There is no public
+signup page.
+
+**Losing access:** if a device is lost or Face ID stops recognizing you,
+there's no password reset — SSH into the server and delete the affected
+row(s) from the `passkeys` table (via `psql` or pgAdmin), then have that
+person re-enroll via a fresh invite from another signed-in account.
 
 ### Deploying updates
 
@@ -104,11 +145,10 @@ app is only reachable at the server's LAN IP). Get that working first, or
 the Shortcut will silently fail to log steps anytime you're not on your
 home WiFi.
 
-**1. Set the secret token on the server**, in `.env`:
-```
-STEPS_IMPORT_TOKEN="<a long random string — generate with: openssl rand -hex 32>"
-```
-Redeploy (`./scripts/deploy.sh`) after adding it.
+**1. Get your steps import token** — sign in, tap the account icon →
+your personal token is shown under "Steps import token," with a copy
+button. Each account has its own, so imported steps always land on the
+right person.
 
 **2. Build the Shortcut** (Shortcuts app → + → new shortcut):
 1. Add action **Find Health Samples** — Type: `Steps`, Date: `Today`,
@@ -118,7 +158,7 @@ Redeploy (`./scripts/deploy.sh`) after adding it.
 3. Add action **Get Contents of URL**:
    - URL: `https://vitaldash.morganserver.com/api/import/steps`
    - Method: `POST`
-   - Headers: `Authorization` → `Bearer <the same token from .env>`
+   - Headers: `Authorization` → `Bearer <your steps import token>`
    - Request Body: `JSON`, with fields:
      - `date` → `Current Date` formatted as `ISO8601` (or just today's
        date as `YYYY-MM-DD`)

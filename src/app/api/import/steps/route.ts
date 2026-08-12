@@ -3,17 +3,18 @@ import { prisma } from "@/lib/prisma";
 
 // Receives a daily step count from an external automation (an Apple
 // Shortcut running on a schedule, hitting this over the internet — not
-// just the LAN). Unlike /api/entries, this is protected by a shared
-// secret token so a stranger can't POST fake step counts into the DB.
+// just the LAN). Not gated by a browser session (there's no browser here),
+// so it's protected by a per-account secret token instead — each account
+// has its own (see /account), so steps land on the right person.
 export async function POST(request: NextRequest) {
-  const expected = process.env.STEPS_IMPORT_TOKEN;
-  if (!expected) {
-    return NextResponse.json({ error: "Server missing STEPS_IMPORT_TOKEN" }, { status: 500 });
-  }
-
   const auth = request.headers.get("authorization") ?? "";
   const token = auth.replace(/^Bearer\s+/i, "");
-  if (!token || token !== expected) {
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({ where: { stepsImportToken: token } });
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -34,9 +35,9 @@ export async function POST(request: NextRequest) {
   }
 
   const entry = await prisma.dailyEntry.upsert({
-    where: { date: new Date(date) },
+    where: { userId_date: { userId: user.id, date: new Date(date) } },
     update: { steps: Math.round(steps) },
-    create: { date: new Date(date), steps: Math.round(steps) },
+    create: { userId: user.id, date: new Date(date), steps: Math.round(steps) },
   });
 
   return NextResponse.json({

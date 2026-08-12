@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Masthead() {
+  const router = useRouter();
   const now = new Date();
   const day = now.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
   const date = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -22,6 +24,18 @@ export default function Masthead() {
             {date}
           </span>
         </div>
+        <button
+          type="button"
+          onClick={() => router.push("/account")}
+          aria-label="Account"
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ background: "var(--surface)", color: "var(--ink-muted)", boxShadow: "var(--shadow)" }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+            <circle cx="12" cy="8" r="3.5" />
+            <path d="M4.5 20c1.4-3.4 4.3-5.2 7.5-5.2s6.1 1.8 7.5 5.2" />
+          </svg>
+        </button>
         <ThemeToggle />
       </div>
     </header>
