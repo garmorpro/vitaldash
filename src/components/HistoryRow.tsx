@@ -6,6 +6,29 @@ import { fmtDateShort } from "@/lib/chart-math";
 
 const ACTIONS_WIDTH = 144; // px, two 72px buttons
 
+function WeightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[11px] w-[11px]">
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l2.5 2.5M9 3h6" />
+    </svg>
+  );
+}
+function BpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[11px] w-[11px]">
+      <path d="M4 12h4l2-6 4 12 2-6h4" />
+    </svg>
+  );
+}
+function StepsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[11px] w-[11px]">
+      <path d="M5 20V13M12 20V9M19 20V5" />
+    </svg>
+  );
+}
+
 export default function HistoryRow({
   entry,
   onEdit,
@@ -49,10 +72,16 @@ export default function HistoryRow({
     onEdit(entry);
   }
 
-  const parts: { text: string; color: string }[] = [];
-  if (entry.weightLbs != null) parts.push({ text: `${entry.weightLbs.toFixed(1)} lb`, color: "var(--weight-strong)" });
-  if (entry.systolic != null) parts.push({ text: `${entry.systolic}/${entry.diastolic} mmHg`, color: "var(--bp-strong)" });
-  if (entry.steps != null) parts.push({ text: `${entry.steps.toLocaleString()} steps`, color: "var(--steps-strong)" });
+  const pills: { text: string; icon: React.ReactNode; bg: string; fg: string }[] = [];
+  if (entry.weightLbs != null) {
+    pills.push({ text: `${entry.weightLbs.toFixed(1)} lb`, icon: <WeightIcon />, bg: "var(--weight-soft)", fg: "var(--weight-strong)" });
+  }
+  if (entry.systolic != null) {
+    pills.push({ text: `${entry.systolic}/${entry.diastolic}`, icon: <BpIcon />, bg: "var(--bp-soft)", fg: "var(--bp-strong)" });
+  }
+  if (entry.steps != null) {
+    pills.push({ text: entry.steps.toLocaleString(), icon: <StepsIcon />, bg: "var(--steps-soft)", fg: "var(--steps-strong)" });
+  }
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
@@ -88,22 +117,29 @@ export default function HistoryRow({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleRowClick}
-        className="relative flex cursor-pointer items-center justify-between gap-3 rounded-2xl px-3 py-3"
+        className="relative flex cursor-pointer items-start justify-between gap-2.5 rounded-2xl px-3 py-3"
         style={{
           background: "var(--surface)",
           transform: `translateX(${dragX}px)`,
           transition: dragging ? "none" : "transform 0.2s ease",
         }}
       >
-        <span className="shrink-0 text-[0.82rem] font-semibold" style={{ color: "var(--ink-muted)" }}>
+        <span className="mt-[3px] shrink-0 text-[0.78rem] font-bold" style={{ color: "var(--ink-muted)" }}>
           {fmtDateShort(entry.date)}
         </span>
-        <span className="tabular flex flex-wrap justify-end gap-x-2 gap-y-0.5 text-right text-[0.82rem] font-bold">
-          {parts.length === 0 ? (
-            <span style={{ color: "var(--ink-faint)", fontWeight: 500 }}>No data</span>
+        <span className="tabular flex flex-1 flex-wrap justify-end gap-1.5">
+          {pills.length === 0 ? (
+            <span className="mt-[3px] text-[0.78rem] font-medium" style={{ color: "var(--ink-faint)" }}>
+              No data
+            </span>
           ) : (
-            parts.map((p, i) => (
-              <span key={i} style={{ color: p.color }}>
+            pills.map((p, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-[3px] text-[0.76rem] font-bold"
+                style={{ background: p.bg, color: p.fg }}
+              >
+                {p.icon}
                 {p.text}
               </span>
             ))
