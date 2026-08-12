@@ -70,16 +70,26 @@ export default function LogWeightPage() {
           <label htmlFor="w-date" className="text-[0.74rem] font-bold" style={{ color: "var(--ink-faint)" }}>
             Date
           </label>
-          <input
-            ref={firstInputRef}
-            id="w-date"
-            type="date"
-            value={date}
-            max={todayISO()}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full min-w-0 rounded-xl px-4 py-3 text-[1rem] font-semibold"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--ink)" }}
-          />
+          {/* iOS Safari's native date control ignores a percentage width and
+              renders at its own intrinsic size, which is wider than this
+              field. Taking it out of flow with absolute positioning inside a
+              fixed-size, overflow-hidden box forces it into the same
+              footprint as the other inputs instead of pushing the page wide. */}
+          <div
+            className="relative h-12 w-full min-w-0 overflow-hidden rounded-xl"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <input
+              ref={firstInputRef}
+              id="w-date"
+              type="date"
+              value={date}
+              max={todayISO()}
+              onChange={(e) => setDate(e.target.value)}
+              className="absolute inset-0 h-full w-full appearance-none border-none bg-transparent px-4 text-[1rem] font-semibold outline-none"
+              style={{ color: "var(--ink)" }}
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
