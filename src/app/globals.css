@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --ground: #f1efe9;
+  --surface: #ffffff;
+  --surface-2: #f5f2ec;
+  --surface-3: #eae6dc;
+  --border: #dedad1;
+  --border-strong: #c9c4b8;
+  --ink: #201d18;
+  --ink-muted: #6b655b;
+  --ink-faint: #a29c90;
+  --weight: #b06a12;
+  --weight-soft: rgba(176, 106, 18, 0.13);
+  --weight-strong: #8f5610;
+  --steps: #0e8f63;
+  --steps-soft: rgba(14, 143, 99, 0.13);
+  --steps-strong: #0b7350;
+  --focus: 0 0 0 3px rgba(176, 106, 18, 0.35);
+  --radius: 3px;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --ground: #15171a;
+    --surface: #1c1e21;
+    --surface-2: #23262a;
+    --surface-3: #2a2d31;
+    --border: #34373c;
+    --border-strong: #43474d;
+    --ink: #ece7de;
+    --ink-muted: #9c978e;
+    --ink-faint: #6e6a62;
+    --weight: #bd7b2a;
+    --weight-soft: rgba(189, 123, 42, 0.16);
+    --weight-strong: #dda457;
+    --steps: #2fa57c;
+    --steps-soft: rgba(47, 165, 124, 0.16);
+    --steps-strong: #52c299;
+    --focus: 0 0 0 3px rgba(189, 123, 42, 0.4);
+    color-scheme: dark;
   }
 }
 
+:root[data-theme="dark"] {
+  --ground: #15171a;
+  --surface: #1c1e21;
+  --surface-2: #23262a;
+  --surface-3: #2a2d31;
+  --border: #34373c;
+  --border-strong: #43474d;
+  --ink: #ece7de;
+  --ink-muted: #9c978e;
+  --ink-faint: #6e6a62;
+  --weight: #bd7b2a;
+  --weight-soft: rgba(189, 123, 42, 0.16);
+  --weight-strong: #dda457;
+  --steps: #2fa57c;
+  --steps-soft: rgba(47, 165, 124, 0.16);
+  --steps-strong: #52c299;
+  --focus: 0 0 0 3px rgba(189, 123, 42, 0.4);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --ground: #f1efe9;
+  --surface: #ffffff;
+  --surface-2: #f5f2ec;
+  --surface-3: #eae6dc;
+  --border: #dedad1;
+  --border-strong: #c9c4b8;
+  --ink: #201d18;
+  --ink-muted: #6b655b;
+  --ink-faint: #a29c90;
+  --weight: #b06a12;
+  --weight-soft: rgba(176, 106, 18, 0.13);
+  --weight-strong: #8f5610;
+  --steps: #0e8f63;
+  --steps-soft: rgba(14, 143, 99, 0.13);
+  --steps-strong: #0b7350;
+  --focus: 0 0 0 3px rgba(176, 106, 18, 0.35);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ground);
+  color: var(--ink);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-fraunces), Georgia, "Iowan Old Style", serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.italic-accent {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-color: var(--weight);
+}
+
+.grid-line {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.axis-label {
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 9.5px;
+  fill: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-up {
+    animation: fadeUp 0.4s ease backwards;
+  }
+  .row-flash td {
+    animation: rowIn 0.6s ease;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rowIn {
+  from {
+    background-color: var(--weight-soft);
+  }
+  to {
+    background-color: transparent;
+  }
 }
