@@ -46,6 +46,14 @@ export function fmtDateFull(iso: string) {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 }
 
+// Deliberately NOT toISOString().slice(0, 10) — that returns the UTC
+// calendar date, which drifts a day off from "today" for anyone west of
+// UTC once local evening arrives. Build the date from local components
+// instead so it always matches the phone/browser's actual calendar day.
 export function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
