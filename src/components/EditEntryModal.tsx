@@ -3,7 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { Entry, SaveInput } from "@/hooks/useEntries";
 import { fmtDateFull } from "@/lib/chart-math";
-import { useVisualViewportHeight } from "@/hooks/useVisualViewportHeight";
+
+// Scrolls the just-focused field into view once the keyboard has had a
+// moment to start animating in — more reliable across repeated opens than
+// trying to precompute available height (dvh and visualViewport both
+// proved flaky on iOS across repeat keyboard show/hide cycles).
+function handleFocusScroll(e: React.FocusEvent<HTMLElement>) {
+  const target = e.target;
+  setTimeout(() => {
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, 300);
+}
 
 export default function EditEntryModal({
   entry,
@@ -25,7 +35,6 @@ export default function EditEntryModal({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const vh = useVisualViewportHeight();
 
   useEffect(() => {
     firstInputRef.current?.focus();
@@ -84,7 +93,7 @@ export default function EditEntryModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: vh ? vh - 32 : undefined }}>
+      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: "85vh" }}>
         <div className="mb-1 flex items-center justify-between gap-3">
           <h2 className="text-[1.05rem] font-extrabold">Edit entry</h2>
           <button
@@ -118,6 +127,7 @@ export default function EditEntryModal({
               placeholder="Not logged"
               value={weightLbs}
               onChange={(e) => setWeightLbs(e.target.value)}
+              onFocus={handleFocusScroll}
               className="w-full rounded-xl px-3.5 py-2.5 text-[0.94rem] font-semibold"
               style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--ink)" }}
             />
@@ -137,6 +147,7 @@ export default function EditEntryModal({
                 placeholder="—"
                 value={systolic}
                 onChange={(e) => setSystolic(e.target.value)}
+                onFocus={handleFocusScroll}
                 className="w-full rounded-xl px-3 py-2.5 text-[0.94rem] font-semibold"
                 style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--ink)" }}
               />
@@ -154,6 +165,7 @@ export default function EditEntryModal({
                 placeholder="—"
                 value={diastolic}
                 onChange={(e) => setDiastolic(e.target.value)}
+                onFocus={handleFocusScroll}
                 className="w-full rounded-xl px-3 py-2.5 text-[0.94rem] font-semibold"
                 style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--ink)" }}
               />
@@ -171,6 +183,7 @@ export default function EditEntryModal({
                 placeholder="—"
                 value={pulse}
                 onChange={(e) => setPulse(e.target.value)}
+                onFocus={handleFocusScroll}
                 className="w-full rounded-xl px-3 py-2.5 text-[0.94rem] font-semibold"
                 style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--ink)" }}
               />
