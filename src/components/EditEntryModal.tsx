@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Entry, SaveInput } from "@/hooks/useEntries";
 import { fmtDateFull } from "@/lib/chart-math";
+import { useVisualViewportHeight } from "@/hooks/useVisualViewportHeight";
 
 export default function EditEntryModal({
   entry,
@@ -24,6 +25,7 @@ export default function EditEntryModal({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const vh = useVisualViewportHeight();
 
   useEffect(() => {
     firstInputRef.current?.focus();
@@ -82,7 +84,7 @@ export default function EditEntryModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: "calc(100dvh - 2rem)" }}>
+      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: vh ? vh - 32 : undefined }}>
         <div className="mb-1 flex items-center justify-between gap-3">
           <h2 className="text-[1.05rem] font-extrabold">Edit entry</h2>
           <button

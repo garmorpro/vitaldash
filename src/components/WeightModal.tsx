@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { SaveInput } from "@/hooks/useEntries";
 import { todayISO } from "@/lib/chart-math";
+import { useVisualViewportHeight } from "@/hooks/useVisualViewportHeight";
 
 export default function WeightModal({
   onClose,
@@ -16,6 +17,7 @@ export default function WeightModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const vh = useVisualViewportHeight();
 
   useEffect(() => {
     firstInputRef.current?.focus();
@@ -52,7 +54,7 @@ export default function WeightModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: "calc(100dvh - 2rem)" }}>
+      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: vh ? vh - 32 : undefined }}>
         <div className="mb-5 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-[1.05rem] font-extrabold">
             <span className="h-[9px] w-[9px] rounded-full" style={{ background: "var(--weight)" }} />
