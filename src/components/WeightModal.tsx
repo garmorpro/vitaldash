@@ -46,13 +46,13 @@ export default function WeightModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
-      style={{ background: "rgba(20, 40, 55, 0.35)", backdropFilter: "blur(2px)" }}
+      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto p-4 sm:items-center"
+      style={{ background: "rgba(20, 40, 55, 0.35)", backdropFilter: "blur(2px)", height: "100dvh" }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="fade-up w-full max-w-sm rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}>
+      <div className="fade-up my-auto w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: "calc(100dvh - 2rem)" }}>
         <div className="mb-5 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-[1.05rem] font-extrabold">
             <span className="h-[9px] w-[9px] rounded-full" style={{ background: "var(--weight)" }} />
