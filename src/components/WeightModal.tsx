@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { SaveInput } from "@/hooks/useEntries";
 import { todayISO } from "@/lib/chart-math";
 
-export default function EntryModal({
+export default function WeightModal({
   onClose,
   onSave,
 }: {
@@ -16,7 +16,6 @@ export default function EntryModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     firstInputRef.current?.focus();
@@ -30,21 +29,15 @@ export default function EntryModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
     if (!weightLbs) {
       setError("Enter a weight.");
       return;
     }
-
     setSaving(true);
     try {
-      await onSave({
-        date,
-        weightLbs: Number(weightLbs),
-      });
+      await onSave({ date, weightLbs: Number(weightLbs) });
       onClose();
     } catch {
-      // error state already set by the hook via thrown message
       setError("Something went wrong saving that entry.");
     } finally {
       setSaving(false);
@@ -54,59 +47,53 @@ export default function EntryModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
-      style={{ background: "rgba(10, 9, 7, 0.45)" }}
+      style={{ background: "rgba(20, 40, 55, 0.35)", backdropFilter: "blur(2px)" }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="entry-modal-title"
-        className="fade-up w-full max-w-sm rounded-[3px] border p-6"
-        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-      >
-        <div className="mb-5 flex items-start justify-between gap-3">
-          <h2 id="entry-modal-title" className="display text-lg">
-            Log an entry
+      <div className="fade-up w-full max-w-sm rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}>
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-[1.05rem] font-extrabold">
+            <span className="h-[9px] w-[9px] rounded-full" style={{ background: "var(--weight)" }} />
+            Log weight
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-            style={{ color: "var(--ink-faint)" }}
+            style={{ background: "var(--surface-2)", color: "var(--ink-faint)" }}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-4 w-4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="m-date" className="text-[0.7rem] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>
+            <label htmlFor="w-date" className="text-[0.72rem] font-bold" style={{ color: "var(--ink-faint)" }}>
               Date
             </label>
             <input
               ref={firstInputRef}
-              id="m-date"
+              id="w-date"
               type="date"
               value={date}
               max={todayISO()}
               onChange={(e) => setDate(e.target.value)}
-              className="mono rounded-[3px] border px-3 py-2.5 text-[0.92rem]"
-              style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--ink)" }}
+              className="w-full rounded-xl px-3.5 py-2.5 text-[0.94rem] font-semibold"
+              style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--ink)" }}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="m-weight" className="text-[0.7rem] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>
+            <label htmlFor="w-weight" className="text-[0.72rem] font-bold" style={{ color: "var(--ink-faint)" }}>
               Weight (lb)
             </label>
             <input
-              id="m-weight"
+              id="w-weight"
               type="number"
               step="0.1"
               min="0"
@@ -114,16 +101,13 @@ export default function EntryModal({
               placeholder="180.2"
               value={weightLbs}
               onChange={(e) => setWeightLbs(e.target.value)}
-              className="mono rounded-[3px] border px-3 py-2.5 text-[0.92rem]"
-              style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--ink)" }}
+              className="w-full rounded-xl px-3.5 py-2.5 text-[0.94rem] font-semibold"
+              style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--ink)" }}
             />
           </div>
-          <p className="-mt-2 text-[0.72rem]" style={{ color: "var(--ink-faint)" }}>
-            Steps sync automatically from Apple Health.
-          </p>
 
           {error && (
-            <p className="text-[0.82rem]" style={{ color: "var(--weight-strong)" }}>
+            <p className="text-[0.82rem] font-semibold" style={{ color: "var(--status-critical)" }}>
               {error}
             </p>
           )}
@@ -131,10 +115,10 @@ export default function EntryModal({
           <button
             type="submit"
             disabled={saving}
-            className="mt-1 rounded-[3px] py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50"
-            style={{ background: "var(--ink)", color: "var(--ground)" }}
+            className="mt-1 rounded-2xl py-3 text-[0.92rem] font-bold text-white transition-opacity disabled:opacity-50"
+            style={{ background: "var(--weight)" }}
           >
-            {saving ? "Saving…" : "Save entry"}
+            {saving ? "Saving…" : "Save weight"}
           </button>
         </form>
       </div>

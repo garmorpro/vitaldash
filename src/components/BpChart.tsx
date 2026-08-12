@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import type { Entry } from "@/hooks/useEntries";
 import { fmtDateFull, fmtDateShort } from "@/lib/chart-math";
 
-export default function WeightChart({ entries }: { entries: Entry[] }) {
-  const weightEntries = entries
-    .filter((e): e is Entry & { weightLbs: number } => e.weightLbs != null)
+export default function BpChart({ entries }: { entries: Entry[] }) {
+  const bpEntries = entries
+    .filter((e): e is Entry & { systolic: number; diastolic: number } => e.systolic != null && e.diastolic != null)
     .sort((a, b) => (a.date < b.date ? -1 : 1))
     .slice(-14);
 
@@ -16,61 +16,71 @@ export default function WeightChart({ entries }: { entries: Entry[] }) {
 
   const w = 720;
   const h = 210;
-  const padL = 36;
+  const padL = 30;
   const padR = 12;
   const padT = 14;
   const padB = 24;
 
-  if (weightEntries.length < 2) {
+  if (bpEntries.length < 2) {
     return (
       <section className="fade-up rounded-[var(--radius)] p-5 sm:p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}>
         <div className="mb-2 flex items-baseline justify-between gap-3">
-          <h2 className="text-[1rem] font-bold">Weight</h2>
+          <h2 className="text-[1rem] font-bold">Blood pressure</h2>
         </div>
         <p className="text-sm" style={{ color: "var(--ink-muted)" }}>
-          Log a few more days to see your trend here.
+          Log a few more readings to see your trend here.
         </p>
       </section>
     );
   }
 
-  const values = weightEntries.map((e) => e.weightLbs);
-  const min = Math.floor(Math.min(...values) - 0.6);
-  const max = Math.ceil(Math.max(...values) + 0.6);
+  const allVals = bpEntries.map((e) => e.systolic).concat(bpEntries.map((e) => e.diastolic));
+  const min = Math.floor(Math.min(...allVals) / 5) * 5 - 5;
+  const max = Math.ceil(Math.max(...allVals) / 5) * 5 + 5;
   const range = max - min || 1;
   const innerW = w - padL - padR;
   const innerH = h - padT - padB;
 
-  const xFor = (i: number) => padL + (i / (weightEntries.length - 1)) * innerW;
+  const xFor = (i: number) => padL + (i / (bpEntries.length - 1)) * innerW;
   const yFor = (v: number) => padT + innerH - ((v - min) / range) * innerH;
 
-  const points = weightEntries.map((e, i) => [xFor(i), yFor(e.weightLbs)] as const);
-  const line = "M" + points.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" L");
-  const area = `${line} L${points[points.length - 1][0].toFixed(1)},${padT + innerH} L${points[0][0].toFixed(1)},${padT + innerH} Z`;
+  const sysPoints = bpEntries.map((e, i) => [xFor(i), yFor(e.systolic)] as const);
+  const diaPoints = bpEntries.map((e, i) => [xFor(i), yFor(e.diastolic)] as const);
+  const lineOf = (pts: readonly (readonly [number, number])[]) => "M" + pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" L");
 
   const gridLines = Array.from({ length: 4 }, (_, g) => min + (range * g) / 3);
-  const xLabelIdxs = [0, Math.floor((weightEntries.length - 1) / 2), weightEntries.length - 1];
+  const xLabelIdxs = [0, Math.floor((bpEntries.length - 1) / 2), bpEntries.length - 1];
 
   function handleMove(evt: React.MouseEvent<SVGRectElement>) {
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
     const localX = ((evt.clientX - rect.left) / rect.width) * w;
-    let i = Math.round(((localX - padL) / innerW) * (weightEntries.length - 1));
-    i = Math.max(0, Math.min(weightEntries.length - 1, i));
+    let i = Math.round(((localX - padL) / innerW) * (bpEntries.length - 1));
+    i = Math.max(0, Math.min(bpEntries.length - 1, i));
     setHover(i);
-    const [px, py] = points[i];
+    const [px, py] = sysPoints[i];
     setTooltipPos({ x: (px / w) * rect.width, y: (py / h) * rect.height });
   }
 
-  const hoverEntry = hover != null ? weightEntries[hover] : null;
+  const hoverEntry = hover != null ? bpEntries[hover] : null;
 
   return (
-    <section className="fade-up rounded-[var(--radius)] p-5 sm:p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", animationDelay: "0.14s" }}>
-      <div className="mb-4 flex items-baseline justify-between gap-3">
+    <section className="fade-up rounded-[var(--radius)] p-5 sm:p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", animationDelay: "0.1s" }}>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 className="text-[1rem] font-bold">
-          Weight <span className="text-[0.82rem] font-medium" style={{ color: "var(--ink-faint)" }}>· last {weightEntries.length} days</span>
+          Blood pressure <span className="text-[0.82rem] font-medium" style={{ color: "var(--ink-faint)" }}>· last {bpEntries.length} readings</span>
         </h2>
+      </div>
+      <div className="mb-3 flex gap-4">
+        <span className="inline-flex items-center gap-1.5 text-[0.78rem] font-semibold" style={{ color: "var(--ink-muted)" }}>
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--bp)" }} />
+          Systolic
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-[0.78rem] font-semibold" style={{ color: "var(--ink-muted)" }}>
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--bp)", opacity: 0.4 }} />
+          Diastolic
+        </span>
       </div>
 
       <div className="overflow-x-auto">
@@ -80,7 +90,7 @@ export default function WeightChart({ entries }: { entries: Entry[] }) {
               <g key={g}>
                 <line x1={padL} y1={yFor(val)} x2={w - padR} y2={yFor(val)} className="grid-line" />
                 <text x={0} y={yFor(val) + 3} className="axis-label">
-                  {val.toFixed(1)}
+                  {Math.round(val)}
                 </text>
               </g>
             ))}
@@ -90,33 +100,33 @@ export default function WeightChart({ entries }: { entries: Entry[] }) {
                 x={xFor(i)}
                 y={h - 6}
                 className="axis-label"
-                textAnchor={i === 0 ? "start" : i === weightEntries.length - 1 ? "end" : "middle"}
+                textAnchor={i === 0 ? "start" : i === bpEntries.length - 1 ? "end" : "middle"}
               >
-                {fmtDateShort(weightEntries[i].date)}
+                {fmtDateShort(bpEntries[i].date)}
               </text>
             ))}
 
-            <path d={area} fill="var(--weight-soft)" stroke="none" />
-            <path d={line} fill="none" stroke="var(--weight)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={lineOf(diaPoints)} fill="none" stroke="var(--bp)" strokeOpacity="0.4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={lineOf(sysPoints)} fill="none" stroke="var(--bp)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-            {points.map(([x, y], i) => {
-              const isLast = i === points.length - 1;
+            {sysPoints.map(([x, y], i) => {
+              const isLast = i === sysPoints.length - 1;
               return (
                 <circle
                   key={i}
                   cx={x}
                   cy={y}
                   r={isLast ? 5 : 2.8}
-                  fill={isLast ? "var(--surface)" : "var(--weight)"}
-                  stroke={isLast ? "var(--weight)" : "none"}
+                  fill={isLast ? "var(--surface)" : "var(--bp)"}
+                  stroke={isLast ? "var(--bp)" : "none"}
                   strokeWidth={isLast ? 2.5 : 0}
-                  opacity={isLast ? 1 : 0.55}
+                  opacity={isLast ? 1 : 0.6}
                 />
               );
             })}
 
             {hover != null && (
-              <line x1={points[hover][0]} y1={padT} x2={points[hover][0]} y2={padT + innerH} stroke="var(--ink-faint)" strokeWidth="1" strokeDasharray="3,3" />
+              <line x1={sysPoints[hover][0]} y1={padT} x2={sysPoints[hover][0]} y2={padT + innerH} stroke="var(--ink-faint)" strokeWidth="1" strokeDasharray="3,3" />
             )}
 
             <rect
@@ -142,7 +152,10 @@ export default function WeightChart({ entries }: { entries: Entry[] }) {
               }}
             >
               <span className="block text-[0.66rem] font-semibold opacity-65">{fmtDateFull(hoverEntry.date)}</span>
-              <span className="font-extrabold">{hoverEntry.weightLbs.toFixed(1)} lb</span>
+              <span className="font-extrabold">
+                {hoverEntry.systolic}/{hoverEntry.diastolic} mmHg
+              </span>
+              {hoverEntry.pulse != null && <span className="block font-semibold opacity-80">Pulse {hoverEntry.pulse} bpm</span>}
             </div>
           )}
         </div>

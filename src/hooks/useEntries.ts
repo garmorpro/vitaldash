@@ -7,12 +7,18 @@ export type Entry = {
   date: string; // YYYY-MM-DD
   weightLbs: number | null;
   steps: number | null;
+  systolic: number | null;
+  diastolic: number | null;
+  pulse: number | null;
 };
 
 export type SaveInput = {
   date: string;
   weightLbs?: number | null;
   steps?: number | null;
+  systolic?: number | null;
+  diastolic?: number | null;
+  pulse?: number | null;
 };
 
 export function useEntries() {

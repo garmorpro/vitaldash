@@ -46,6 +46,17 @@ export function fmtDateFull(iso: string) {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 }
 
+export type BpLevel = "good" | "warn" | "critical";
+
+// Simplified AHA-style categories. Not medical advice — just enough to
+// color-code a personal trend, not diagnose anything.
+export function bpStatus(systolic: number, diastolic: number): { label: string; level: BpLevel } {
+  if (systolic >= 140 || diastolic >= 90) return { label: "High (Stage 2)", level: "critical" };
+  if (systolic >= 130 || diastolic >= 80) return { label: "High (Stage 1)", level: "warn" };
+  if (systolic >= 120) return { label: "Elevated", level: "warn" };
+  return { label: "Normal", level: "good" };
+}
+
 // Deliberately NOT toISOString().slice(0, 10) — that returns the UTC
 // calendar date, which drifts a day off from "today" for anyone west of
 // UTC once local evening arrives. Build the date from local components

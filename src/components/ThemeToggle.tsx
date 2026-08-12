@@ -46,8 +46,8 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label="Toggle color theme"
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors"
-      style={{ borderColor: "var(--border-strong)", background: "var(--surface)" }}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+      style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}
     >
       {isDark ? (
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" strokeWidth="1.6" strokeLinecap="round" className="h-4 w-4">

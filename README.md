@@ -145,6 +145,8 @@ with an error message explaining what's wrong.
 
 ## Roadmap
 
-- v1: daily weight entry + daily step count (this scaffold)
-- v2 candidates: body measurements, mood/energy tag, weekly averages
+- v1: daily weight entry + daily step count
+- v2: blood pressure (systolic/diastolic/pulse), with clinical range
+  status (Normal / Elevated / High)
+- v3 candidates: body measurements, mood/energy tag, weekly averages
 - Calorie tracking is deliberately out of scope for now

@@ -14,20 +14,20 @@ export default function StepsChart({ entries }: { entries: Entry[] }) {
   const [hover, setHover] = useState<number | null>(null);
 
   const w = 720;
-  const h = 200;
-  const padL = 44;
+  const h = 190;
+  const padL = 40;
   const padR = 12;
-  const padT = 16;
-  const padB = 26;
+  const padT = 14;
+  const padB = 24;
 
   if (stepEntries.length === 0) {
     return (
-      <section className="fade-up rounded-[3px] border p-5 sm:p-6" style={{ background: "var(--surface)", borderColor: "var(--border)", animationDelay: "0.16s" }}>
+      <section className="fade-up rounded-[var(--radius)] p-5 sm:p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", animationDelay: "0.18s" }}>
         <div className="mb-2 flex items-baseline justify-between gap-3">
-          <h2 className="display text-[1.05rem]">Steps</h2>
+          <h2 className="text-[1rem] font-bold">Steps</h2>
         </div>
         <p className="text-sm" style={{ color: "var(--ink-muted)" }}>
-          No step entries yet — log one from the + button.
+          No step entries yet.
         </p>
       </section>
     );
@@ -37,7 +37,7 @@ export default function StepsChart({ entries }: { entries: Entry[] }) {
   const innerW = w - padL - padR;
   const innerH = h - padT - padB;
   const slot = innerW / stepEntries.length;
-  const barW = Math.min(46, slot * 0.5);
+  const barW = Math.min(42, slot * 0.48);
   const yFor = (v: number) => padT + innerH - (v / max) * innerH;
   const goalY = yFor(STEPS_GOAL);
   const gridVals = [0, 0.5, 1].map((fr) => max * fr);
@@ -45,10 +45,10 @@ export default function StepsChart({ entries }: { entries: Entry[] }) {
   const hoverEntry = hover != null ? stepEntries[hover] : null;
 
   return (
-    <section className="fade-up rounded-[3px] border p-5 sm:p-6" style={{ background: "var(--surface)", borderColor: "var(--border)", animationDelay: "0.16s" }}>
+    <section className="fade-up rounded-[var(--radius)] p-5 sm:p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", animationDelay: "0.18s" }}>
       <div className="mb-4 flex items-baseline justify-between gap-3">
-        <h2 className="display text-[1.05rem]">
-          Steps <span className="italic-accent text-[0.85rem]" style={{ color: "var(--ink-faint)" }}>· last {stepEntries.length} days</span>
+        <h2 className="text-[1rem] font-bold">
+          Steps <span className="text-[0.82rem] font-medium" style={{ color: "var(--ink-faint)" }}>· last {stepEntries.length} days</span>
         </h2>
       </div>
 
@@ -65,9 +65,6 @@ export default function StepsChart({ entries }: { entries: Entry[] }) {
             ))}
 
             <line x1={padL} y1={goalY} x2={w - padR} y2={goalY} stroke="var(--ink-faint)" strokeWidth="1" strokeDasharray="2,4" />
-            <text x={w - padR} y={goalY - 5} className="axis-label" textAnchor="end">
-              goal {STEPS_GOAL.toLocaleString()}
-            </text>
 
             {stepEntries.map((e, i) => {
               const cx = padL + slot * i + slot / 2;
@@ -81,10 +78,10 @@ export default function StepsChart({ entries }: { entries: Entry[] }) {
                     y={barY}
                     width={barW}
                     height={barH}
-                    rx={4}
-                    ry={4}
+                    rx={10}
+                    ry={10}
                     fill="var(--steps)"
-                    opacity={hit ? 1 : 0.62}
+                    opacity={hit ? 1 : 0.55}
                     onMouseEnter={() => setHover(i)}
                     onMouseLeave={() => setHover(null)}
                   />
@@ -98,17 +95,17 @@ export default function StepsChart({ entries }: { entries: Entry[] }) {
 
           {hoverEntry && (
             <div
-              className="pointer-events-none absolute z-10 whitespace-nowrap rounded-[2px] px-2.5 py-1.5 text-[0.72rem] leading-snug"
+              className="tabular pointer-events-none absolute z-10 whitespace-nowrap rounded-xl px-2.5 py-1.5 text-[0.74rem] leading-snug"
               style={{
                 background: "var(--ink)",
-                color: "var(--ground)",
+                color: "var(--surface)",
                 left: `${((padL + slot * hover! + slot / 2) / w) * 100}%`,
                 top: `${(yFor(hoverEntry.steps) / h) * 100}%`,
-                transform: "translate(-50%, -130%)",
+                transform: "translate(-50%, -132%)",
               }}
             >
-              <span className="block text-[0.65rem] uppercase tracking-[0.06em] opacity-65">{fmtDateFull(hoverEntry.date)}</span>
-              <span className="mono font-semibold">{hoverEntry.steps.toLocaleString()} steps</span>
+              <span className="block text-[0.66rem] font-semibold opacity-65">{fmtDateFull(hoverEntry.date)}</span>
+              <span className="font-extrabold">{hoverEntry.steps.toLocaleString()} steps</span>
             </div>
           )}
         </div>
