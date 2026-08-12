@@ -13,7 +13,6 @@ export default function EntryModal({
 }) {
   const [date, setDate] = useState(todayISO());
   const [weightLbs, setWeightLbs] = useState("");
-  const [steps, setSteps] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
@@ -32,8 +31,8 @@ export default function EntryModal({
     e.preventDefault();
     setError(null);
 
-    if (!weightLbs && !steps) {
-      setError("Enter a weight, step count, or both.");
+    if (!weightLbs) {
+      setError("Enter a weight.");
       return;
     }
 
@@ -41,8 +40,7 @@ export default function EntryModal({
     try {
       await onSave({
         date,
-        weightLbs: weightLbs ? Number(weightLbs) : null,
-        steps: steps ? Number(steps) : null,
+        weightLbs: Number(weightLbs),
       });
       onClose();
     } catch {
@@ -103,42 +101,26 @@ export default function EntryModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="m-weight" className="text-[0.7rem] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>
-                Weight (lb)
-              </label>
-              <input
-                id="m-weight"
-                type="number"
-                step="0.1"
-                min="0"
-                inputMode="decimal"
-                placeholder="180.2"
-                value={weightLbs}
-                onChange={(e) => setWeightLbs(e.target.value)}
-                className="mono rounded-[3px] border px-3 py-2.5 text-[0.92rem]"
-                style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--ink)" }}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="m-steps" className="text-[0.7rem] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>
-                Steps
-              </label>
-              <input
-                id="m-steps"
-                type="number"
-                step="1"
-                min="0"
-                inputMode="numeric"
-                placeholder="8100"
-                value={steps}
-                onChange={(e) => setSteps(e.target.value)}
-                className="mono rounded-[3px] border px-3 py-2.5 text-[0.92rem]"
-                style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--ink)" }}
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="m-weight" className="text-[0.7rem] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>
+              Weight (lb)
+            </label>
+            <input
+              id="m-weight"
+              type="number"
+              step="0.1"
+              min="0"
+              inputMode="decimal"
+              placeholder="180.2"
+              value={weightLbs}
+              onChange={(e) => setWeightLbs(e.target.value)}
+              className="mono rounded-[3px] border px-3 py-2.5 text-[0.92rem]"
+              style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--ink)" }}
+            />
           </div>
+          <p className="-mt-2 text-[0.72rem]" style={{ color: "var(--ink-faint)" }}>
+            Steps sync automatically from Apple Health.
+          </p>
 
           {error && (
             <p className="text-[0.82rem]" style={{ color: "var(--weight-strong)" }}>
