@@ -61,6 +61,20 @@ machine except editing code and `git push`.
    (For a persistent process across reboots/crashes, run this under a
    process manager like `pm2` or a systemd service — not covered yet.)
 
+### Deploying updates
+
+The running app is managed by **pm2** and serves a pre-built `.next`
+folder — a `git pull` alone does not update it. After pulling new
+changes, run:
+
+```bash
+./scripts/deploy.sh
+```
+
+This pulls, reinstalls dependencies, applies any schema changes, rebuilds,
+and restarts the pm2 process. Useful pm2 commands: `pm2 status`,
+`pm2 logs vitaldash`, `pm2 restart vitaldash`.
+
 ### Connecting pgAdmin
 
 pgAdmin can run wherever's convenient (on the server itself, or on your
