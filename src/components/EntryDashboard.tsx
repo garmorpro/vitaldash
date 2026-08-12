@@ -1,6 +1,7 @@
 "use client";
 
-import { useEntries } from "@/hooks/useEntries";
+import { useState } from "react";
+import { useEntries, type Entry } from "@/hooks/useEntries";
 import Masthead from "./Masthead";
 import WeightStatCard from "./WeightStatCard";
 import BpStatCard from "./BpStatCard";
@@ -10,9 +11,11 @@ import WeightChart from "./WeightChart";
 import StepsChart from "./StepsChart";
 import HistoryTable from "./HistoryTable";
 import EntryFab from "./EntryFab";
+import EditEntryModal from "./EditEntryModal";
 
 export default function EntryDashboard() {
-  const { entries, loading, error, saveEntry } = useEntries();
+  const { entries, loading, error, saveEntry, deleteEntry } = useEntries();
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
 
   return (
     <div className="mx-auto flex w-full max-w-[980px] flex-col gap-5 px-5 py-8 sm:py-10">
@@ -37,7 +40,7 @@ export default function EntryDashboard() {
         <BpChart entries={entries} />
         <WeightChart entries={entries} />
         <StepsChart entries={entries} />
-        <HistoryTable entries={entries} loading={loading} />
+        <HistoryTable entries={entries} loading={loading} onRowClick={setEditingEntry} />
       </main>
 
       <footer className="tabular pb-2 text-center text-[0.76rem] font-semibold" style={{ color: "var(--ink-faint)" }}>
@@ -45,6 +48,10 @@ export default function EntryDashboard() {
       </footer>
 
       <EntryFab onSave={saveEntry} />
+
+      {editingEntry && (
+        <EditEntryModal entry={editingEntry} onClose={() => setEditingEntry(null)} onSave={saveEntry} onDelete={deleteEntry} />
+      )}
     </div>
   );
 }

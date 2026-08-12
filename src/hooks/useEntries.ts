@@ -74,5 +74,20 @@ export function useEntries() {
     [reload]
   );
 
-  return { entries, loading, error, saveEntry, reload };
+  const deleteEntry = useCallback(
+    async (date: string) => {
+      setError(null);
+      const res = await fetch(`/api/entries?date=${encodeURIComponent(date)}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const message = body.error ?? "Something went wrong deleting that entry.";
+        setError(message);
+        throw new Error(message);
+      }
+      await reload();
+    },
+    [reload]
+  );
+
+  return { entries, loading, error, saveEntry, deleteEntry, reload };
 }
