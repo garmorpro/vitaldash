@@ -23,21 +23,58 @@ server side — they are never exposed to the browser.
 
 ## Getting started
 
-1. Install dependencies:
+This app is developed on one machine and deployed/run on a separate Ubuntu
+server — the server hosts both the running app and its Postgres database
+(managed/browsed with pgAdmin). Nothing needs to run locally on a dev
+machine except editing code and `git push`.
+
+**On the Ubuntu server:**
+
+1. Install and start Postgres (skip if already running):
    ```bash
+   sudo apt update && sudo apt install postgresql postgresql-contrib
+   sudo systemctl enable --now postgresql
+   ```
+2. Create the app database + a dedicated user (skip if already created):
+   ```bash
+   sudo -u postgres psql -c "CREATE USER vitaldash_app WITH PASSWORD 'your_password_here';"
+   sudo -u postgres psql -c "CREATE DATABASE vitaldash OWNER vitaldash_app;"
+   ```
+3. Pull the repo, install dependencies:
+   ```bash
+   git clone https://github.com/garmorpro/vitaldash.git
+   cd vitaldash
    npm install
    ```
-2. Copy `.env.example` to `.env` and fill in a real Postgres connection
-   string (e.g. from a free [Supabase](https://supabase.com) project).
-3. Push the schema to your database:
+4. Copy `.env.example` to `.env` and set `DATABASE_URL` to match the
+   user/password/db name above (host is `localhost` since the app and DB
+   run on the same server).
+5. Push the schema to the database:
    ```bash
    npx prisma db push
    ```
-4. Run the dev server:
+6. Build and run:
    ```bash
-   npm run dev
+   npm run build
+   npm run start
    ```
-5. Open [http://localhost:3000](http://localhost:3000).
+   (For a persistent process across reboots/crashes, run this under a
+   process manager like `pm2` or a systemd service — not covered yet.)
+
+### Connecting pgAdmin
+
+pgAdmin can run wherever's convenient (on the server itself, or on your
+Mac pointed at the server if its Postgres port is reachable). Register a
+new server:
+- **General tab** → Name: anything, e.g. `VitalDash`
+- **Connection tab** → Host: `localhost` (if pgAdmin runs on the server) or
+  the server's address (if connecting remotely — only do this if the
+  Postgres port is firewalled to trusted IPs), Port: `5432`, Maintenance
+  DB: `vitaldash`, Username: `vitaldash_app`, Password: whatever you set
+  above
+
+From there you can browse the `daily_entries` table visually, same as
+you'd use phpMyAdmin for MySQL.
 
 ## Project structure
 
