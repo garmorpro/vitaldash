@@ -2,11 +2,17 @@ import "server-only";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 
-// The signed-in session. Long-lived (180 days) since the whole point of
-// passkey auth is that Face ID is the re-auth step — a short cookie would
-// just mean re-doing Face ID more often for no security benefit.
-const SESSION_COOKIE = "vitaldash_session";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 180;
+// Two different lifetimes at play here:
+//  - the signed JWT itself is valid for up to 180 days — a hard cap so a
+//    session can never be extended forever, no matter how active.
+//  - the *cookie's* Max-Age is much shorter and gets refreshed on every
+//    request (see proxy.ts) — that's what actually enforces "log out after
+//    N minutes of inactivity." Stop using the app and the browser deletes
+//    the cookie on its own once that window passes; the still-valid JWT
+//    never even gets sent again.
+export const SESSION_COOKIE = "vitaldash_session";
+const SESSION_ABSOLUTE_MAX_SECONDS = 60 * 60 * 24 * 180;
+export const SESSION_INACTIVITY_SECONDS = 60 * 30;
 
 function secretKey() {
   const secret = process.env.SESSION_SECRET;
@@ -22,7 +28,7 @@ export async function createSession(userId: string) {
   const token = await new SignJWT({ userId })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
+    .setExpirationTime(`${SESSION_ABSOLUTE_MAX_SECONDS}s`)
     .sign(secretKey());
 
   const cookieStore = await cookies();
@@ -31,7 +37,7 @@ export async function createSession(userId: string) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
+    maxAge: SESSION_INACTIVITY_SECONDS,
   });
 }
 
