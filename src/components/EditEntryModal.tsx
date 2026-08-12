@@ -76,13 +76,13 @@ export default function EditEntryModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto p-4 sm:items-center"
-      style={{ background: "rgba(20, 40, 55, 0.35)", backdropFilter: "blur(2px)", height: "100dvh" }}
+      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+      style={{ background: "rgba(20, 40, 55, 0.35)", backdropFilter: "blur(2px)" }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="fade-up my-auto w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: "calc(100dvh - 2rem)" }}>
+      <div className="fade-up w-full max-w-sm overflow-y-auto rounded-[22px] p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)", maxHeight: "calc(100dvh - 2rem)" }}>
         <div className="mb-1 flex items-center justify-between gap-3">
           <h2 className="text-[1.05rem] font-extrabold">Edit entry</h2>
           <button
