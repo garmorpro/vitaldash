@@ -84,9 +84,9 @@ export default function WeightChart({ entries }: { entries: Entry[] }) {
                 </text>
               </g>
             ))}
-            {xLabelIdxs.map((i) => (
+            {xLabelIdxs.map((i, idx) => (
               <text
-                key={i}
+                key={idx}
                 x={xFor(i)}
                 y={h - 6}
                 className="axis-label"

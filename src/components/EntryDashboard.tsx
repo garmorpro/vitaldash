@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useEntries, type Entry } from "@/hooks/useEntries";
 import Masthead from "./Masthead";
 import WeightStatCard from "./WeightStatCard";
@@ -16,6 +16,16 @@ import EditEntryModal from "./EditEntryModal";
 export default function EntryDashboard() {
   const { entries, loading, error, saveEntry, deleteEntry } = useEntries();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+
+  // Swipe-to-delete is already a deliberate two-step gesture (swipe, then
+  // tap Delete), so it deletes immediately — no extra confirm dialog on
+  // top of that, matching the native list pattern it's based on.
+  const handleSwipeDelete = useCallback(
+    (entry: Entry) => {
+      deleteEntry(entry.date).catch(() => {});
+    },
+    [deleteEntry]
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-[980px] flex-col gap-5 px-5 py-8 sm:py-10">
@@ -40,7 +50,7 @@ export default function EntryDashboard() {
         <BpChart entries={entries} />
         <WeightChart entries={entries} />
         <StepsChart entries={entries} />
-        <HistoryTable entries={entries} loading={loading} onRowClick={setEditingEntry} />
+        <HistoryTable entries={entries} loading={loading} onRowClick={setEditingEntry} onDelete={handleSwipeDelete} />
       </main>
 
       <footer className="tabular pb-2 text-center text-[0.76rem] font-semibold" style={{ color: "var(--ink-faint)" }}>
