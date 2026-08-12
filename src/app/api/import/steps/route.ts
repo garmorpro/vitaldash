@@ -19,7 +19,12 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => null);
   const date = body?.date;
-  const steps = body?.steps;
+  // Apple Shortcuts sometimes has to route the step count through a "Text"
+  // action to dodge an unrelated Health-data-sharing restriction, which
+  // turns the number into a JSON string ("8342" instead of 8342). Accept
+  // either.
+  const rawSteps = body?.steps;
+  const steps = typeof rawSteps === "string" ? Number(rawSteps) : rawSteps;
 
   if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json({ error: "date is required as YYYY-MM-DD" }, { status: 400 });
