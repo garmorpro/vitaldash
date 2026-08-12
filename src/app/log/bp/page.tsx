@@ -68,8 +68,8 @@ export default function LogBpPage() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
+      <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-1.5">
           <label htmlFor="b-date" className="text-[0.74rem] font-bold" style={{ color: "var(--ink-faint)" }}>
             Date
           </label>
@@ -80,7 +80,7 @@ export default function LogBpPage() {
             value={date}
             max={todayISO()}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-xl px-4 py-3 text-[1rem] font-semibold"
+            className="w-full min-w-0 rounded-xl px-4 py-3 text-[1rem] font-semibold"
             style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--ink)" }}
           />
         </div>
