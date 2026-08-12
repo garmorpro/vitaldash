@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import type { Entry } from "@/hooks/useEntries";
 import { fmtDateShort } from "@/lib/chart-math";
 
-const ACTIONS_WIDTH = 144; // px, two 72px buttons
+const ACTIONS_WIDTH = 160; // px — two pill buttons + gap + edge padding
 
 function WeightIcon() {
   return (
@@ -63,13 +63,13 @@ export default function HistoryRow({
     setDragX(shouldReveal ? -ACTIONS_WIDTH : 0);
   }
 
+  // Swipe-only — tapping the row does nothing except close an already
+  // revealed row. Edit only happens via the revealed Edit pill.
   function handleRowClick() {
     if (revealedRef.current) {
       revealedRef.current = false;
       setDragX(0);
-      return;
     }
-    onEdit(entry);
   }
 
   const pills: { text: string; icon: React.ReactNode; bg: string; fg: string }[] = [];
@@ -85,7 +85,7 @@ export default function HistoryRow({
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
-      <div className="absolute inset-y-0 right-0 flex" style={{ width: ACTIONS_WIDTH }}>
+      <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-2" style={{ width: ACTIONS_WIDTH }}>
         <button
           type="button"
           onClick={() => {
@@ -93,7 +93,7 @@ export default function HistoryRow({
             setDragX(0);
             onEdit(entry);
           }}
-          className="flex w-[72px] items-center justify-center text-[0.8rem] font-bold text-white"
+          className="flex h-10 flex-1 items-center justify-center rounded-full text-[0.8rem] font-bold text-white"
           style={{ background: "var(--weight)" }}
         >
           Edit
@@ -105,7 +105,7 @@ export default function HistoryRow({
             setDragX(0);
             onDelete(entry);
           }}
-          className="flex w-[72px] items-center justify-center text-[0.8rem] font-bold text-white"
+          className="flex h-10 flex-1 items-center justify-center rounded-full text-[0.8rem] font-bold text-white"
           style={{ background: "var(--status-critical)" }}
         >
           Delete
@@ -117,7 +117,7 @@ export default function HistoryRow({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleRowClick}
-        className="relative flex cursor-pointer items-start justify-between gap-2.5 rounded-2xl px-3 py-3"
+        className="relative flex items-start justify-between gap-2.5 rounded-2xl px-3 py-3"
         style={{
           background: "var(--surface)",
           transform: `translateX(${dragX}px)`,

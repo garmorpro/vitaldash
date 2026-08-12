@@ -28,7 +28,7 @@ export default function HistoryTable({
         )}
         {sorted.length > 0 && (
           <span className="text-[0.74rem] font-medium sm:hidden" style={{ color: "var(--ink-faint)" }}>
-            Tap to edit, swipe for more
+            Swipe left for actions
           </span>
         )}
       </div>
