@@ -46,3 +46,12 @@ next-env.d.ts
 /src/generated/
 
 /src/generated/prisma
+
+# iOS app (ios/VitalDash) — XcodeGen regenerates the .xcodeproj from
+# project.yml, so the generated project isn't checked in (avoids .pbxproj
+# merge conflicts); everyone runs `xcodegen generate` locally instead.
+ios/VitalDash/VitalDash.xcodeproj/
+ios/VitalDash/VitalDash/App/Info.plist
+ios/VitalDash/DerivedData/
+ios/VitalDash/build/
+*.xcuserstate
